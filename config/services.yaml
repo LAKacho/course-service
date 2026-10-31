@@ -1,0 +1,25 @@
+parameters:
+    local_demo_user: 'demo-student'
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+    App\:
+        resource: '../src/'
+        exclude: '../src/{Entity,DataFixtures,Integration,Assessment/Entity,Assessment/Port,Coding/Entity,Coding/Contract,Access/GrantSource,Access/GrantDefinition,Kernel.php}'
+    logger: '@App\Service\FileLogger'
+    App\Assessment\Port\EntryAssessment: '@App\Assessment\Service\AssessmentService'
+    App\Coding\Contract\CodeRunnerClient: '@App\Coding\Service\UnavailableCodeRunnerClient'
+    App\Access\GrantSource: '@App\Access\LocalGrantSource'
+when@dev:
+    services:
+        App\DataFixtures\:
+            resource: '../src/DataFixtures/'
+            autowire: true
+            autoconfigure: true
+when@test:
+    services:
+        App\DataFixtures\:
+            resource: '../src/DataFixtures/'
+            autowire: true
+            autoconfigure: true

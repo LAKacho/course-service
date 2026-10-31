@@ -1,0 +1,15 @@
+controllers:
+    resource: ../src/Controller/
+    type: attribute
+assessment_controllers:
+    resource: ../src/Assessment/Controller/
+    type: attribute
+coding_controllers:
+    resource: ../src/Coding/Controller/
+    type: attribute
+access_controllers:
+    resource: ../src/Access/AccessController.php
+    type: attribute
+auth_controllers:
+    resource: ../src/Auth/DemoLoginController.php
+    type: attribute

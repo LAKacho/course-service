@@ -1,0 +1,1 @@
+{% extends 'base.html.twig' %}{% block title %}Ошибка {{ status }}{% endblock %}{% block body %}<div class="surface empty-state"><div class="eyebrow">ОШИБКА {{ status }}</div><h1>{{ message }}</h1><a class="btn btn-primary mt-3" href="{{ path('dashboard') }}">На главную</a></div>{% endblock %}

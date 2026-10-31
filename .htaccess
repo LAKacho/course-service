@@ -1,0 +1,2 @@
+# Do not expose source/configuration through the default XAMPP document root.
+Require all denied

@@ -1,0 +1,88 @@
+{
+  "version": 1,
+  "source": "course-service-go",
+  "learningPath": {
+    "externalId": "go-backend",
+    "title": "Go Backend Developer",
+    "slug": "go-backend-developer",
+    "description": "Небольшая авторская программа: инструменты Go, обработка данных и первый HTTP-обработчик. Задания сформулированы специально для Course Service; документация доступна по внешним ссылкам.",
+    "status": "draft",
+    "courses": [
+      {
+        "externalId": "go-foundations",
+        "title": "Go: от консоли к HTTP",
+        "description": "Практическое знакомство с модулем, функциями, тестами и HTTP-ответами без большой инфраструктуры.",
+        "status": "draft",
+        "position": 1,
+        "sprints": [
+          {
+            "externalId": "go-cli-sprint",
+            "title": "Модуль и функции",
+            "description": "Подготовьте небольшой модуль и разделите обработку данных на проверяемые функции.",
+            "position": 1,
+            "cards": [
+              {
+                "externalId": "go-cli-card",
+                "title": "Консольный счётчик расходов",
+                "description": "Создайте собственную программу подсчёта расходов по короткому списку целых сумм.",
+                "status": "todo",
+                "position": 1,
+                "tasks": [
+                  {
+                    "externalId": "go-module-reading",
+                    "title": "Разберитесь с модулем Go",
+                    "description": "Откройте официальное введение и объясните своими словами назначение go.mod и команды go run. Создайте пустой локальный модуль для будущего счётчика; код примеров переписывать не требуется.",
+                    "type": "reading",
+                    "contentUrl": "https://go.dev/doc/tutorial/getting-started",
+                    "position": 1
+                  },
+                  {
+                    "externalId": "go-expenses-practice",
+                    "title": "Проверьте сумму расходов",
+                    "description": "Напишите функцию Total для списка целых сумм. Отрицательные значения считайте ошибкой ввода. Придумайте собственные табличные тесты: пустой список, несколько сумм и отрицательное значение. Тесты запускайте локально; платформа не проверяет код автоматически.",
+                    "type": "practice",
+                    "contentUrl": "https://go.dev/doc/tutorial/add-a-test",
+                    "position": 2
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "externalId": "go-http-sprint",
+            "title": "Первый HTTP-ответ",
+            "description": "Перенесите знакомую обработку данных в маленький обработчик стандартной библиотеки.",
+            "position": 2,
+            "cards": [
+              {
+                "externalId": "go-http-card",
+                "title": "Сервис состояния счётчика",
+                "description": "Сформируйте JSON-ответ с состоянием приложения и разберите контракт ошибок.",
+                "status": "todo",
+                "position": 1,
+                "tasks": [
+                  {
+                    "externalId": "go-http-practice",
+                    "title": "Реализуйте endpoint состояния",
+                    "description": "Создайте GET /health на net/http. Верните JSON с названием своего счётчика и полем status. Для другого метода верните 405. Убедитесь, что Content-Type соответствует телу ответа, и проверьте ответ локально через curl.",
+                    "type": "practice",
+                    "contentUrl": "https://pkg.go.dev/net/http",
+                    "position": 1
+                  },
+                  {
+                    "externalId": "go-flow-question",
+                    "title": "Объясните обработку ошибки",
+                    "description": "Что произойдёт, если после записи ответа с ошибкой обработчик продолжит обычное выполнение? Нарисуйте собственную схему ветвлений и объясните, где завершать обработку. Приведите небольшой пример своими словами.",
+                    "type": "question",
+                    "contentUrl": "https://go.dev/tour/flowcontrol/1",
+                    "position": 2
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

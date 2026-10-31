@@ -1,0 +1,3 @@
+{% extends 'base.html.twig' %}{% block title %}Атлас программ · Ментор{% endblock %}{% block body %}
+<a class="back-link" href="{{ path('mentor_learning') }}">← Маршруты учеников</a><div class="eyebrow">ПРЕДСТАВЛЕНИЕ МЕНТОРА</div><h1>Атлас полных программ</h1><p>Здесь видны все главы и задания, включая закрытые для демо-ученика.</p><div class="sprint-list">{% for item in paths %}<article class="surface sprint-row"><div><h2><a href="{{ path('mentor_program', {id:item.id}) }}">{{ item.title }}</a></h2><p>{{ item.description }}</p></div></article>{% else %}<div class="surface empty-state">Направления пока не созданы.</div>{% endfor %}</div>
+{% endblock %}

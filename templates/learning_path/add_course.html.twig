@@ -1,0 +1,7 @@
+{% extends 'base.html.twig' %}
+{% block title %}Добавление курса{% endblock %}
+{% block body %}
+<a class="back-link" href="{{ path('learning_path_show', {id:path.id}) }}">← {{ path.title }}</a>
+<div class="page-heading"><div><h1>Добавить существующий курс</h1><p>Один курс может входить в несколько направлений. Дубли внутри направления не допускаются.</p></div></div>
+<div class="surface editor">{{ form_start(form) }}{{ form_widget(form) }}<button class="btn btn-primary mt-3" data-save>Добавить курс</button>{{ form_end(form) }}</div>
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends 'base.html.twig' %}
+{% block title %}{{ path.title }}{% endblock %}
+{% block body %}
+<a class="back-link" href="{{ path('learning_path_index') }}">← Все направления</a>
+<div class="page-heading">
+    <div><span class="status status-{{ path.status }}">{{ {'draft':'Черновик','published':'Опубликовано','archived':'В архиве'}[path.status] }}</span><h1 class="mt-3">{{ path.title }}</h1><p class="preserve-lines">{{ path.description }}</p></div>
+    {% if can('course.edit',path) %}<a class="btn btn-outline-secondary" href="{{ path('learning_path_edit', {id:path.id}) }}">Редактировать направление</a>{% endif %}
+</div>
+<div class="section-heading">
+    <div><h2>Курсы направления <span class="heading-count">{{ links|length }}</span></h2><p>Меньшее значение порядка располагает курс выше. При равенстве используется ID связи.</p></div>
+    {% if can('course.edit',path) %}<a class="btn btn-primary" href="{{ path('learning_path_add_course', {id:path.id}) }}">＋ Добавить курс</a>{% endif %}
+</div>
+<div class="sprint-list">
+{% for link in links %}
+    <article class="surface path-course-row" data-path-course-id="{{ link.id }}">
+        <div class="path-course-info"><span class="sprint-number">{{ '%02d'|format(loop.index) }}</span><div><h3><a href="{{ path('course', {id:link.course.id}) }}">{{ link.course.title }}</a></h3><p>{{ link.course.description|length > 180 ? link.course.description|slice(0,180) ~ '…' : link.course.description }}</p></div></div>
+        {% if can('course.edit',path) %}{{ form_start(positions[link.id], {attr: {class:'path-position-form'}}) }}
+            {{ form_row(positions[link.id].position) }}
+            <button class="btn btn-sm btn-outline-secondary" aria-label="Сохранить порядок курса {{ link.course.title }}">Сохранить порядок</button>
+        {{ form_end(positions[link.id]) }}{% endif %}
+    </article>
+{% else %}
+    <div class="surface empty-state"><h3>Курсы пока не добавлены</h3><p>Выберите существующий курс — его материалы и прогресс сохранятся.</p></div>
+{% endfor %}
+</div>
+{% endblock %}

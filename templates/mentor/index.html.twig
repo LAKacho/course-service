@@ -1,0 +1,8 @@
+{% extends 'base.html.twig' %}{% block title %}Учебные маршруты{% endblock %}{% block body %}
+<p><a class="btn btn-outline-secondary" href="{{ path('mentor_programs') }}">Атлас полных программ →</a></p>
+<div class="eyebrow">ПРОСТРАНСТВО МЕНТОРА</div><div class="page-heading"><div><h1>Учебные маршруты</h1><p>Здесь доступна вся программа. Страница ученика показывает только открытые задания.</p></div><a class="btn btn-outline-secondary" href="{{ path('student_home') }}">Открыть демо-ученика</a></div>
+<div class="section-heading"><h2>Назначения</h2><a class="btn btn-primary" href="{{ path('mentor_enrollment_new') }}">Назначить программу</a></div>
+<div class="surface editor">{% for enrollment in enrollments %}<p><strong>{{ enrollment.userId }}</strong> → {{ enrollment.learningPath ? 'Направление: ' ~ enrollment.learningPath.title : 'Курс: ' ~ enrollment.course.title }}</p>{% else %}<p>Назначений пока нет.</p>{% endfor %}</div>
+<div class="section-heading"><h2>Условия открытия</h2><a class="btn btn-primary" href="{{ path('mentor_prerequisite_new') }}">Добавить условие</a></div>
+<div class="surface editor">{% for condition in conditions %}<p>{{ condition.task.title }} ← после «{{ condition.requiredTask.title }}» <a href="{{ path('mentor_prerequisite_edit', {id:condition.id}) }}">Изменить</a></p>{% else %}<p>Условий пока нет. Все задания назначенной программы без зависимостей доступны сразу.</p>{% endfor %}</div>
+{% endblock %}

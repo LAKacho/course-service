@@ -1,0 +1,1 @@
+{% if current_user_id() %}<div class="session-menu"><span>{{ current_user_id() }}</span><form method="post" action="{{ path('demo_logout') }}"><input type="hidden" name="_token" value="{{ csrf_token('demo_logout') }}"><button type="submit" class="btn btn-sm btn-outline-secondary">Выйти</button></form></div>{% endif %}

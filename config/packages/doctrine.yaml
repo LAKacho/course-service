@@ -1,0 +1,25 @@
+doctrine:
+    dbal:
+        url: '%env(resolve:DATABASE_URL)%'
+        use_savepoints: true
+    orm:
+        naming_strategy: doctrine.orm.naming_strategy.underscore_number_aware
+        # Avoid rewriting loaded proxy files on every request on Windows.
+        auto_generate_proxy_classes: FILE_NOT_EXISTS_OR_CHANGED
+        auto_mapping: true
+        mappings:
+            App:
+                type: attribute
+                dir: '%kernel.project_dir%/src/Entity'
+                prefix: App\Entity
+                alias: App
+            Assessment:
+                type: attribute
+                dir: '%kernel.project_dir%/src/Assessment/Entity'
+                prefix: App\Assessment\Entity
+                alias: Assessment
+            Coding:
+                type: attribute
+                dir: '%kernel.project_dir%/src/Coding/Entity'
+                prefix: App\Coding\Entity
+                alias: Coding

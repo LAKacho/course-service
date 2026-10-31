@@ -1,0 +1,10 @@
+/vendor/
+/var/
+/.env.local
+/.env.*.local
+/.env.docker
+/.phpunit.cache/
+/config/reference.php
+*.dump
+*.sql
+*.log

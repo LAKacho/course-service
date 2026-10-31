@@ -1,0 +1,56 @@
+name: course-service
+services:
+  app:
+    build:
+      context: .
+      target: runtime
+    image: course-service:local
+    ports:
+      - "127.0.0.1:${APP_PORT:-8080}:80"
+    environment:
+      APP_ENV: prod
+      APP_DEBUG: "0"
+      APP_SECRET: "${APP_SECRET:-not-configured}"
+      DATABASE_URL: "postgresql://course_app:${APP_DATABASE_PASSWORD:-not-configured}@db:5432/course_service?serverVersion=16&charset=utf8"
+    volumes:
+      - application_var:/var/www/html/var
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "http://127.0.0.1/login"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 20s
+    restart: unless-stopped
+  db:
+    image: postgres:16-bookworm
+    environment:
+      POSTGRES_DB: course_service
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:-not-configured}"
+      APP_DATABASE_PASSWORD: "${APP_DATABASE_PASSWORD:-not-configured}"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/init-database.sh:/docker-entrypoint-initdb.d/10-application.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U course_app -d course_service"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+  tests:
+    profiles: ["tools"]
+    build:
+      context: .
+      target: test
+    image: course-service-tests:local
+    environment:
+      APP_ENV: test
+      APP_DEBUG: "1"
+      APP_SECRET: test-only-secret
+      DATABASE_URL: "sqlite:///%kernel.project_dir%/var/test.db"
+volumes:
+  application_var:
+  postgres_data:

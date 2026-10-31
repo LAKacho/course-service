@@ -1,0 +1,7 @@
+{% extends 'base.html.twig' %}
+{% block title %}Порядок курса{% endblock %}
+{% block body %}
+<a class="back-link" href="{{ path('learning_path_show', {id:path.id}) }}">← {{ path.title }}</a>
+<div class="page-heading"><div><h1>Порядок курса</h1><p>{{ link.course.title }}</p></div></div>
+<div class="surface editor">{{ form_start(form) }}{{ form_widget(form) }}<button class="btn btn-primary mt-3">Сохранить порядок</button>{{ form_end(form) }}</div>
+{% endblock %}

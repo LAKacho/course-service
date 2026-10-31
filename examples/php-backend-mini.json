@@ -1,0 +1,12 @@
+{
+  "version":1,
+  "source":"course-service-php-demo",
+  "learningPath":{
+    "externalId":"php-backend","title":"PHP Backend","slug":"php-backend-demo","description":"Короткая авторская вводная программа PHP.","status":"published",
+    "courses":[{"externalId":"php-core","title":"PHP: типы и функции","description":"Основы типов и проверяемых функций.","status":"published","position":1,
+      "sprints":[{"externalId":"php-first","title":"Первые функции","description":"Начните с понятного контракта функции.","position":1,
+        "cards":[{"externalId":"php-types","title":"Типы PHP","description":"Изучите параметры и возвращаемые значения.","status":"todo","position":1,
+          "tasks":[{"externalId":"read-types","title":"Прочитайте о типах","description":"Объясните разницу между объявлением типа и проверкой входных данных приложения.","type":"reading","contentUrl":"https://www.php.net/manual/en/language.types.declarations.php","position":1},
+            {"externalId":"explain-null","title":"Разберите nullable-параметр","description":"Придумайте собственный пример функции с параметром ?string и объясните обработку null.","type":"question","contentUrl":null,"position":2}]}]}]}]
+  }
+}

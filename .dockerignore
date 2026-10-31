@@ -1,0 +1,10 @@
+.git
+.env.local
+.env.*.local
+.env.docker
+vendor
+var
+.phpunit.cache
+*.dump
+*.sql
+*.log

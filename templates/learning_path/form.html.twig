@@ -1,0 +1,7 @@
+{% extends 'base.html.twig' %}
+{% block title %}{{ new ? 'Создание' : 'Редактирование' }} направления{% endblock %}
+{% block body %}
+<a class="back-link" href="{{ new ? path('learning_path_index') : path('learning_path_show', {id:path.id}) }}">← Назад</a>
+<div class="page-heading"><div><div class="eyebrow">НАПРАВЛЕНИЯ ОБУЧЕНИЯ</div><h1>{{ new ? 'Создание' : 'Редактирование' }} направления</h1><p>Курсы добавляются после сохранения направления.</p></div></div>
+<div class="surface editor">{{ form_start(form) }}{{ form_widget(form) }}<button class="btn btn-primary mt-3" data-save>Сохранить направление</button>{{ form_end(form) }}</div>
+{% endblock %}
