@@ -1,12 +1,27 @@
 <?php
 namespace App\Tests;
 
-use App\Entity\{Course, Sprint, Card, Task, LearningPath, PathCourse, Enrollment, QuestPrerequisite, QuestActivity};
+use App\Learning\Domain\Entity\Course;
+
+use App\Learning\Domain\Entity\Sprint;
+
+use App\Learning\Domain\Entity\Card;
+
+use App\Learning\Domain\Entity\Task;
+
+use App\Learning\Domain\Entity\LearningPath;
+
+use App\Learning\Domain\Entity\PathCourse;
+
+use App\Mentor\Domain\Entity\Enrollment;
+
+use App\Mentor\Domain\Entity\QuestPrerequisite;
+
+use App\Student\Domain\Entity\QuestActivity;
 use App\Service\{StudentPathPresenter, QuestPrerequisiteService};
 use Doctrine\ORM\Tools\SchemaTool;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
-class RpgPresentationTest extends WebTestCase
+class RpgPresentationTest extends TestCase
 {
     private function prepare(): \Symfony\Bundle\FrameworkBundle\KernelBrowser
     {
@@ -34,7 +49,7 @@ class RpgPresentationTest extends WebTestCase
     public function testMapHasNoHiddenChapterAndMentorSeesFullOutline(): void
     {
         $client = $this->prepare();
-        $model = self::getContainer()->get(StudentPathPresenter::class)->present('demo-student');
+        $model = self::getContainer()->get(StudentPathPresenter::class)->present('001');
         self::assertCount(1, $model['chapters']); self::assertSame('Первая глава', $model['chapters'][0]['title']);
         self::assertSame(1, $model['currentQuest']['id']);
         $client->request('GET', '/learn'); self::assertResponseIsSuccessful();
@@ -52,7 +67,7 @@ class RpgPresentationTest extends WebTestCase
         $client->submit($crawler->filter('form[action="/learn/quests/1/complete"]')->form());
         self::assertResponseRedirects('/learn', 303); $client->followRedirect();
         self::assertSelectorExists('.task-done');
-        $model = self::getContainer()->get(StudentPathPresenter::class)->present('demo-student');
+        $model = self::getContainer()->get(StudentPathPresenter::class)->present('001');
         self::assertCount(2, $model['chapters']); self::assertSame(2, $model['currentQuest']['id']);
         self::assertTrue($model['chapters'][0]['knownCompleted']);
         self::assertSame(50, $model['progress']['percentVisible']);
@@ -64,8 +79,8 @@ class RpgPresentationTest extends WebTestCase
         foreach (['practice', 'video', 'question'] as $type) {
             $task = new Task(); $task->title = 'Открытый '.$type; $task->type = $type; $task->card = $em->find(Card::class, 1); $em->persist($task);
         }
-        $em->flush(); $em->persist(new QuestActivity('demo-student', $em->find(Task::class, 4))); $em->flush();
-        $model = self::getContainer()->get(StudentPathPresenter::class)->present('demo-student');
+        $em->flush(); $em->persist(new QuestActivity('001', $em->find(Task::class, 4))); $em->flush();
+        $model = self::getContainer()->get(StudentPathPresenter::class)->present('001');
         self::assertSame(4, $model['currentQuest']['id']);
         $client->request('GET', '/learn'); self::assertResponseIsSuccessful();
         foreach (['reading', 'video', 'practice', 'question'] as $type) { self::assertSelectorExists('.quest-'.$type); }

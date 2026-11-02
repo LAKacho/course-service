@@ -1,0 +1,147 @@
+App\Learning\Domain\Entity\Card:
+  properties:
+    status:
+      -
+        Symfony\Component\Validator\Constraints\Choice:
+          choices:
+            - todo
+            - in_progress
+            - done
+    position:
+      -
+        Symfony\Component\Validator\Constraints\PositiveOrZero: null
+App\Learning\Domain\Entity\Course:
+  properties:
+    status:
+      -
+        Symfony\Component\Validator\Constraints\Choice:
+          choices:
+            - draft
+            - published
+            - archived
+App\Mentor\Domain\Entity\Enrollment:
+  constraints:
+    -
+      Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity:
+        fields:
+          - userId
+          - learningPath
+        message: 'Направление уже назначено этому ученику.'
+    -
+      Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity:
+        fields:
+          - userId
+          - course
+        message: 'Курс уже назначен этому ученику.'
+    -
+      App\Mentor\Infrastructure\Validation\Constraint\ExactlyOneEnrollmentTarget:
+        message: 'Выберите ровно одно: направление или курс.'
+        errorPath: learningPath
+  properties:
+    userId:
+      -
+        Symfony\Component\Validator\Constraints\NotBlank:
+          normalizer: trim
+      -
+        Symfony\Component\Validator\Constraints\Length:
+          max: 100
+App\Learning\Domain\Entity\LearningItem:
+  properties:
+    title:
+      -
+        Symfony\Component\Validator\Constraints\NotBlank:
+          normalizer: trim
+      -
+        Symfony\Component\Validator\Constraints\Length:
+          max: 180
+    description:
+      -
+        Symfony\Component\Validator\Constraints\Length:
+          max: 20000
+App\Learning\Domain\Entity\LearningPath:
+  constraints:
+    -
+      Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity:
+        fields:
+          - slug
+        message: 'Направление с таким адресом уже существует.'
+  properties:
+    slug:
+      -
+        Symfony\Component\Validator\Constraints\NotBlank: null
+      -
+        Symfony\Component\Validator\Constraints\Length:
+          max: 180
+      -
+        Symfony\Component\Validator\Constraints\Regex:
+          pattern: '/^[a-z0-9]+(?:-[a-z0-9]+)*$/D'
+          message: 'Используйте строчные латинские буквы, цифры и одиночные дефисы между словами.'
+    status:
+      -
+        Symfony\Component\Validator\Constraints\Choice:
+          choices:
+            - draft
+            - published
+            - archived
+App\Learning\Domain\Entity\PathCourse:
+  constraints:
+    -
+      Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity:
+        fields:
+          - path
+          - course
+        errorPath: course
+        message: 'Этот курс уже добавлен в направление.'
+  properties:
+    course:
+      -
+        Symfony\Component\Validator\Constraints\NotNull:
+          message: 'Выберите существующий курс.'
+    position:
+      -
+        Symfony\Component\Validator\Constraints\PositiveOrZero: null
+      -
+        Symfony\Component\Validator\Constraints\LessThanOrEqual:
+          value: 2147483647
+App\Mentor\Domain\Entity\QuestPrerequisite:
+  constraints:
+    -
+      Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity:
+        fields:
+          - task
+        message: 'У задания уже есть обязательный предшественник. Измените существующее условие.'
+  properties:
+    task:
+      -
+        Symfony\Component\Validator\Constraints\NotNull: null
+    requiredTask:
+      -
+        Symfony\Component\Validator\Constraints\NotNull: null
+App\Learning\Domain\Entity\Sprint:
+  properties:
+    position:
+      -
+        Symfony\Component\Validator\Constraints\PositiveOrZero: null
+App\Learning\Domain\Entity\Task:
+  properties:
+    type:
+      -
+        Symfony\Component\Validator\Constraints\Choice:
+          choices:
+            - reading
+            - video
+            - practice
+            - question
+            - coding
+    contentUrl:
+      -
+        Symfony\Component\Validator\Constraints\Url:
+          protocols:
+            - http
+            - https
+      -
+        Symfony\Component\Validator\Constraints\Length:
+          max: 2048
+    position:
+      -
+        Symfony\Component\Validator\Constraints\PositiveOrZero: null

@@ -8,18 +8,38 @@ doctrine:
         auto_generate_proxy_classes: FILE_NOT_EXISTS_OR_CHANGED
         auto_mapping: true
         mappings:
-            App:
-                type: attribute
-                dir: '%kernel.project_dir%/src/Entity'
-                prefix: App\Entity
-                alias: App
+            Access:
+                type: xml
+                dir: '%kernel.project_dir%/src/Access/Infrastructure/Persistence/Mapping'
+                prefix: App\Access\Domain\Entity
+                alias: Access
             Assessment:
-                type: attribute
-                dir: '%kernel.project_dir%/src/Assessment/Entity'
-                prefix: App\Assessment\Entity
+                type: xml
+                dir: '%kernel.project_dir%/src/Assessment/Infrastructure/Persistence/Mapping'
+                prefix: App\Assessment\Domain\Entity
                 alias: Assessment
+            Auth:
+                type: xml
+                dir: '%kernel.project_dir%/src/Auth/Infrastructure/Persistence/Mapping'
+                prefix: App\Auth\Domain\Entity
+                alias: Auth
             Coding:
-                type: attribute
-                dir: '%kernel.project_dir%/src/Coding/Entity'
-                prefix: App\Coding\Entity
+                type: xml
+                dir: '%kernel.project_dir%/src/Coding/Infrastructure/Persistence/Mapping'
+                prefix: App\Coding\Domain\Entity
                 alias: Coding
+            Learning:
+                type: xml
+                dir: '%kernel.project_dir%/src/Learning/Infrastructure/Persistence/Mapping'
+                prefix: App\Learning\Domain\Entity
+                alias: Learning
+            Mentor:
+                type: xml
+                dir: '%kernel.project_dir%/src/Mentor/Infrastructure/Persistence/Mapping'
+                prefix: App\Mentor\Domain\Entity
+                alias: Mentor
+            Student:
+                type: xml
+                dir: '%kernel.project_dir%/src/Student/Infrastructure/Persistence/Mapping'
+                prefix: App\Student\Domain\Entity
+                alias: Student

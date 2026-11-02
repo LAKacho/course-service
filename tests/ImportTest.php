@@ -1,7 +1,13 @@
 <?php
 namespace App\Tests;
 
-use App\Entity\{Course, LearningPath, Task, TaskProgress};
+use App\Learning\Domain\Entity\Course;
+
+use App\Learning\Domain\Entity\LearningPath;
+
+use App\Learning\Domain\Entity\Task;
+
+use App\Learning\Domain\Entity\TaskProgress;
 use App\Service\ImportService;
 use App\Service\Import\ImportValidationException;
 use Doctrine\ORM\Tools\SchemaTool;
@@ -137,7 +143,7 @@ class ImportTest extends KernelTestCase
         [$em, $importer, $program] = $this->prepare();
         $importer->import($this->file($program));
         $task = $em->getRepository(Task::class)->findOneBy(['importKey' => 'test:go-module-reading']);
-        $em->persist(new TaskProgress('demo-student', $task)); $em->flush();
+        $em->persist(new TaskProgress('001', $task)); $em->flush();
         $program->learningPath->courses[0]->sprints[0]->cards[0]->tasks = [];
         $importer->import($this->file($program));
         self::assertSame(4, $em->getRepository(Task::class)->count([]));

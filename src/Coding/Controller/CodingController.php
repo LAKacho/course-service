@@ -1,17 +1,17 @@
 <?php
 declare(strict_types=1);
 namespace App\Coding\Controller;
-use App\Coding\Service\{SubmissionService, CodingView, ExerciseService};
-use App\Coding\Form\{CodeSolutionType, ExerciseType};
-use App\Entity\Task;
-use App\Service\CurrentUser;
+use App\Coding\Application\Service\{SubmissionService, CodingView, ExerciseService};
+use App\Coding\Infrastructure\Form\{CodeSolutionType, ExerciseType};
+use App\Learning\Domain\Entity\Task;
+use App\Auth\Infrastructure\Session\CurrentUser;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\{Request, Response};
 use Symfony\Component\Routing\Attribute\Route;
 
 final class CodingController extends AbstractController
 {
-    public function __construct(private SubmissionService $solutions, private CodingView $view, private CurrentUser $user,private \App\Access\AccessChecker $access) {}
+    public function __construct(private SubmissionService $solutions, private CodingView $view, private CurrentUser $user,private \App\Access\Application\Service\AccessChecker $access) {}
     #[Route('/learn/coding/{id}', name: 'coding_task', requirements: ['id' => '\d+'], methods: ['GET', 'POST'])]
     public function task(Task $task, Request $request): Response
     {

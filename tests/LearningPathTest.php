@@ -2,12 +2,15 @@
 namespace App\Tests;
 
 use App\DataFixtures\{AppFixtures, LearningPathFixtures};
-use App\Entity\{Course, LearningPath, PathCourse, Task, TaskProgress};
+use App\Learning\Domain\Entity\Course;
+use App\Learning\Domain\Entity\LearningPath;
+use App\Learning\Domain\Entity\PathCourse;
+use App\Learning\Domain\Entity\Task;
+use App\Learning\Domain\Entity\TaskProgress;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\ORM\Tools\SchemaTool;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
-class LearningPathTest extends WebTestCase
+class LearningPathTest extends TestCase
 {
     private function prepare(): \Symfony\Bundle\FrameworkBundle\KernelBrowser
     {
@@ -181,7 +184,7 @@ class LearningPathTest extends WebTestCase
         $this->attach($client, 1, 1, 0);
         $em = self::getContainer()->get('doctrine')->getManager();
         $task = $em->find(Task::class, 1);
-        $em->persist(new TaskProgress('demo-student', $task)); $em->flush();
+        $em->persist(new TaskProgress('001', $task)); $em->flush();
         $em->remove($em->find(PathCourse::class, 1)); $em->flush();
         self::assertNotNull($em->find(Course::class, 1));
         self::assertSame(15, $em->getRepository(Task::class)->count([]));

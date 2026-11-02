@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<doctrine-mapping xmlns="https://www.doctrine-project.org/schemas/orm/doctrine-mapping" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://www.doctrine-project.org/schemas/orm/doctrine-mapping https://www.doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
+  <entity name="App\Assessment\Domain\Entity\SkillAssessment" table="entry_skill_assessment">
+    <id name="id" type="integer"><generator strategy="AUTO"/></id>
+    <many-to-one field="result" target-entity="App\Assessment\Domain\Entity\AssessmentResult"><join-column name="result_id" referenced-column-name="id" nullable="false"/></many-to-one>
+    <many-to-one field="skill" target-entity="App\Assessment\Domain\Entity\Skill"><join-column name="skill_id" referenced-column-name="id" nullable="true"/></many-to-one>
+    <field name="skillCode" type="string" length="50"/>
+    <field name="skillTitle" type="string" length="120"/>
+    <field name="questionCount" type="integer"/>
+    <field name="correctCount" type="integer"/>
+    <field name="weightedPercent" type="float"/>
+    <field name="confidence" type="string" length="20"/>
+    <field name="recommendation" type="text"/>
+    <unique-constraints><unique-constraint name="unique_entry_skill_result" columns="result_id,skill_code"/></unique-constraints>
+  </entity>
+</doctrine-mapping>

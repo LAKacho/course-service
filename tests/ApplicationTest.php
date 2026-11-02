@@ -1,10 +1,13 @@
 <?php
 namespace App\Tests;
 use App\DataFixtures\AppFixtures;
-use App\Entity\{Course, Sprint, Card, Task, TaskProgress};
+use App\Learning\Domain\Entity\Course;
+use App\Learning\Domain\Entity\Sprint;
+use App\Learning\Domain\Entity\Card;
+use App\Learning\Domain\Entity\Task;
+use App\Learning\Domain\Entity\TaskProgress;
 use Doctrine\ORM\Tools\SchemaTool;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
-class ApplicationTest extends WebTestCase
+class ApplicationTest extends TestCase
 {
     private function prepare(): \Symfony\Bundle\FrameworkBundle\KernelBrowser {
         $client = self::createClient();

@@ -1,5 +1,3 @@
 <?php
 declare(strict_types=1);
-namespace App\Access;
-/** Internal policy-data boundary. No proposed HTTP contract or role mapping. */
-interface GrantSource { /** @return list<GrantDefinition> */ public function forUser(string $userId): array; }
+class_alias('App\Access\Application\Port\GrantSource', 'App\\Access\\GrantSource');

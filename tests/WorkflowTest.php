@@ -1,6 +1,7 @@
 <?php
 namespace App\Tests;
-use App\Entity\{Card, Task};
+use App\Learning\Domain\Entity\Card;
+use App\Learning\Domain\Entity\Task;
 use App\Service\{CardWorkflow, ProgressService};
 use PHPUnit\Framework\TestCase;
 class WorkflowTest extends TestCase

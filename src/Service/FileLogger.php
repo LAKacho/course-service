@@ -1,11 +1,5 @@
 <?php
+declare(strict_types=1);
 namespace App\Service;
-use Symfony\Component\DependencyInjection\Attribute\Autowire;
-use Symfony\Component\HttpKernel\Log\Logger;
-class FileLogger extends Logger
-{
-    public function __construct(#[Autowire('%kernel.logs_dir%/%kernel.environment%.log')] string $path) {
-        if (!is_dir(dirname($path))) { mkdir(dirname($path), 0775, true); }
-        parent::__construct('warning', $path);
-    }
-}
+
+class_alias(\App\Shared\Infrastructure\Logging\FileLogger::class, __NAMESPACE__.'\\FileLogger');

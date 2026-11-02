@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<doctrine-mapping xmlns="https://www.doctrine-project.org/schemas/orm/doctrine-mapping" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://www.doctrine-project.org/schemas/orm/doctrine-mapping https://www.doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
+  <mapped-superclass name="App\Learning\Domain\Entity\LearningItem">
+    <id name="id" type="integer" column="id"><generator strategy="AUTO"/></id>
+    <field name="importKey" type="string" column="import_key" length="201" nullable="true" unique="true"/>
+    <field name="title" type="string" column="title" length="180"/>
+    <field name="description" type="text" column="description"/>
+  </mapped-superclass>
+</doctrine-mapping>

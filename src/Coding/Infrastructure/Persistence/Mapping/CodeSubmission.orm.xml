@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<doctrine-mapping xmlns="https://www.doctrine-project.org/schemas/orm/doctrine-mapping"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="https://www.doctrine-project.org/schemas/orm/doctrine-mapping https://www.doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
+  <entity name="App\Coding\Domain\Entity\CodeSubmission" table="coding_submission">
+    <id name="id" type="integer"><generator strategy="AUTO"/></id>
+    <field name="publicId" type="string" length="32" unique="true"/>
+    <field name="userId" type="string" length="100"/>
+    <field name="language" type="string" length="10"/>
+    <field name="sourceCode" type="text"/>
+    <field name="status" type="string" length="20"/>
+    <field name="mode" type="string" length="10"/>
+    <field name="runnerJobId" type="string" length="100" nullable="true" unique="true"/>
+    <field name="resultHash" type="string" length="64" nullable="true"/>
+    <field name="score" type="float" nullable="true"/>
+    <field name="publicResults" type="json"/>
+    <field name="createdAt" type="datetime_immutable"/>
+    <field name="checkedAt" type="datetime_immutable" nullable="true"/>
+    <many-to-one field="exercise" target-entity="App\Coding\Domain\Entity\ExerciseVersion">
+      <join-column name="exercise_id" referenced-column-name="id" nullable="false"/>
+    </many-to-one>
+  </entity>
+</doctrine-mapping>

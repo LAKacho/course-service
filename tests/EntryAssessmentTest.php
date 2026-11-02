@@ -1,12 +1,11 @@
 <?php
 namespace App\Tests;
-use App\Assessment\Entity\{Assessment, AssessmentAttempt, AssessmentResult, Question, AnswerOption, Skill, SkillAssessment, UserAnswer};
+use App\Assessment\Domain\Entity\{Assessment, AssessmentAttempt, AssessmentResult, Question, AnswerOption, Skill, SkillAssessment, UserAnswer};
 use App\Assessment\Service\{BankInstaller, AssessmentService, AssessmentView, ScoringService};
 use Doctrine\ORM\Tools\SchemaTool;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
-use Symfony\Component\HttpKernel\Exception\{ConflictHttpException, NotFoundHttpException};
+use App\Shared\Application\Exception\{Conflict,ResourceNotVisible};
 
-class EntryAssessmentTest extends WebTestCase
+class EntryAssessmentTest extends TestCase
 {
     private function prepare(): \Symfony\Bundle\FrameworkBundle\KernelBrowser
     {
@@ -20,7 +19,7 @@ class EntryAssessmentTest extends WebTestCase
     }
     private function em() { return self::getContainer()->get('doctrine')->getManager(); }
     private function service(): AssessmentService { return self::getContainer()->get(AssessmentService::class); }
-    private function start(string $user = 'demo-student', string $code = 'go_backend'): AssessmentAttempt
+    private function start(string $user = '001', string $code = 'go_backend'): AssessmentAttempt
     {
         return $this->service()->start($this->em()->getRepository(Assessment::class)->findOneBy(['code' => $code]), $user);
     }
@@ -75,7 +74,7 @@ class EntryAssessmentTest extends WebTestCase
         $result = self::getContainer()->get(AssessmentView::class)->result($attempt);
         self::assertSame(100.0, $result['percentCorrect']); self::assertSame('Go Backend', $result['title']);
         self::assertStringNotContainsString('Новая компетенция', json_encode($result, JSON_UNESCAPED_UNICODE));
-        $this->service()->finish($attempt, 'demo-student'); self::assertSame(1, $this->em()->getRepository(AssessmentResult::class)->count([]));
+        $this->service()->finish($attempt, '001'); self::assertSame(1, $this->em()->getRepository(AssessmentResult::class)->count([]));
         self::assertSame($result, self::getContainer()->get(AssessmentView::class)->result($attempt));
         $next = $this->start(); self::assertNotSame($attempt->publicId, $next->publicId);
         self::assertSame('Новый текст банка', $next->snapshot['questions'][0]['text']); self::assertSame(2, $next->snapshot['questions'][0]['version']);
@@ -93,18 +92,18 @@ class EntryAssessmentTest extends WebTestCase
     public function testAnswerOwnershipIsCheckedAtServiceBoundary(): void
     {
         $this->prepare(); $attempt = $this->start('other-student'); $question = $attempt->snapshot['questions'][0];
-        $this->expectException(NotFoundHttpException::class);
-        $this->service()->answer($attempt, 'demo-student', $question['key'], $question['correctAnswer']);
+        $this->expectException(ResourceNotVisible::class);
+        $this->service()->answer($attempt, '001', $question['key'], $question['correctAnswer']);
     }
     public function testRepeatAnswerIsIdempotentAndCannotBeChanged(): void
     {
         $this->prepare(); $attempt = $this->start(); $question = $attempt->snapshot['questions'][0];
-        $this->service()->answer($attempt, 'demo-student', $question['key'], $question['correctAnswer']);
-        $this->service()->answer($attempt, 'demo-student', $question['key'], $question['correctAnswer']);
+        $this->service()->answer($attempt, '001', $question['key'], $question['correctAnswer']);
+        $this->service()->answer($attempt, '001', $question['key'], $question['correctAnswer']);
         self::assertSame(1, $this->em()->getRepository(UserAnswer::class)->count([]));
         $wrong = array_values(array_diff(array_column($question['options'], 'code'), $question['correctAnswer']))[0];
-        try { $this->service()->answer($attempt, 'demo-student', $question['key'], [$wrong]); self::fail('Answer change must fail'); }
-        catch (ConflictHttpException) { self::assertTrue(true); }
+        try { $this->service()->answer($attempt, '001', $question['key'], [$wrong]); self::fail('Answer change must fail'); }
+        catch (Conflict) { self::assertTrue(true); }
         self::assertSame(1, (int) $this->em()->getConnection()->fetchOne('SELECT count(*) FROM entry_user_answer'));
     }
     public function testUnfinishedAttemptHasNoResultAndCanResume(): void
@@ -112,12 +111,12 @@ class EntryAssessmentTest extends WebTestCase
         $client = $this->prepare(); $attempt = $this->start(); $id = $attempt->publicId;
         $client->request('GET', '/api/me/assessment-attempts/'.$id.'/result'); self::assertResponseStatusCodeSame(409);
         $client->request('GET', '/assessments/attempts/'.$id.'/result'); self::assertResponseStatusCodeSame(409);
-        $attempt = $this->service()->owned($id, 'demo-student');
-        try { $this->service()->finish($attempt, 'demo-student'); self::fail('Incomplete attempt cannot finish'); }
-        catch (ConflictHttpException) { self::assertTrue(true); }
+        $attempt = $this->service()->owned($id, '001');
+        try { $this->service()->finish($attempt, '001'); self::fail('Incomplete attempt cannot finish'); }
+        catch (Conflict) { self::assertTrue(true); }
         self::assertSame(0, (int) $this->em()->getConnection()->fetchOne('SELECT count(*) FROM entry_result'));
         $client->request('GET', '/assessments/attempts/'.$id); self::assertResponseIsSuccessful();
-        self::assertSame('in_progress', $this->service()->owned($id, 'demo-student')->status);
+        self::assertSame('in_progress', $this->service()->owned($id, '001')->status);
     }
     public function testOnlyCurrentQuestionAndNoScoringKeysReachStudent(): void
     {
@@ -159,7 +158,7 @@ class EntryAssessmentTest extends WebTestCase
     public function testCodeIsEscapedAndNotExecuted(): void
     {
         $client = $this->prepare(); $assessment = $this->em()->getRepository(Assessment::class)->findOneBy(['code' => 'go_backend']);
-        $question = $assessment->questions->first(); $question->type = 'code_analysis'; $question->codeSnippet = '<script>window.USER_CODE_EXECUTED=true</script>'; $this->em()->flush();
+        $question = array_values(iterator_to_array($assessment->questions))[0]; $question->type = 'code_analysis'; $question->codeSnippet = '<script>window.USER_CODE_EXECUTED=true</script>'; $this->em()->flush();
         $attempt = $this->start(); $client->request('GET', '/assessments/attempts/'.$attempt->publicId); self::assertResponseIsSuccessful();
         self::assertStringContainsString('&lt;script&gt;', $client->getResponse()->getContent());
         self::assertStringNotContainsString('<script>window.USER_CODE_EXECUTED', $client->getResponse()->getContent());
@@ -168,10 +167,10 @@ class EntryAssessmentTest extends WebTestCase
     public function testResultWriteFailureRollsBackWithoutLosingSavedAnswers(): void
     {
         $this->prepare(); $attempt = $this->start();
-        foreach ($attempt->snapshot['questions'] as $question) { $this->service()->answer($attempt, 'demo-student', $question['key'], $question['correctAnswer']); }
+        foreach ($attempt->snapshot['questions'] as $question) { $this->service()->answer($attempt, '001', $question['key'], $question['correctAnswer']); }
         $db = $this->em()->getConnection();
         $db->executeStatement("CREATE TRIGGER fail_entry_result BEFORE INSERT ON entry_skill_assessment WHEN NEW.skill_code = 'sql' BEGIN SELECT RAISE(ABORT, 'assessment result probe'); END");
-        try { $this->service()->finish($attempt, 'demo-student'); self::fail('Result write must fail'); }
+        try { $this->service()->finish($attempt, '001'); self::fail('Result write must fail'); }
         catch (\Doctrine\DBAL\Exception $exception) { self::assertStringContainsString('assessment result probe', $exception->getMessage()); }
         self::assertSame(0, (int) $db->fetchOne('SELECT count(*) FROM entry_result'));
         self::assertSame(0, (int) $db->fetchOne('SELECT count(*) FROM entry_skill_assessment'));

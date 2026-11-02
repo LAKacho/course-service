@@ -1,10 +1,10 @@
 <?php
 declare(strict_types=1);
 namespace App\Tests;
-use App\Entity\{DemoAccount,PermissionGrant};
+use App\Auth\Domain\Entity\DemoAccount;
+use App\Access\Domain\Entity\PermissionGrant;
 use Doctrine\ORM\Tools\SchemaTool;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
-final class DemoLoginTest extends WebTestCase
+final class DemoLoginTest extends TestCase
 {
     private function em(){return self::getContainer()->get('doctrine')->getManager();}
     private function prepare(){

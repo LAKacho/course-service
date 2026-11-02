@@ -1,6 +1,15 @@
 controllers:
     resource: ../src/Controller/
     type: attribute
+student_controllers:
+    resource: ../src/Student/Controller/
+    type: attribute
+mentor_controllers:
+    resource: ../src/Mentor/Controller/
+    type: attribute
+learning_controllers:
+    resource: ../src/Learning/Controller/
+    type: attribute
 assessment_controllers:
     resource: ../src/Assessment/Controller/
     type: attribute
@@ -8,8 +17,8 @@ coding_controllers:
     resource: ../src/Coding/Controller/
     type: attribute
 access_controllers:
-    resource: ../src/Access/AccessController.php
+    resource: ../src/Access/Infrastructure/Http/AccessController.php
     type: attribute
 auth_controllers:
-    resource: ../src/Auth/DemoLoginController.php
+    resource: ../src/Auth/Controller/DemoLoginController.php
     type: attribute
