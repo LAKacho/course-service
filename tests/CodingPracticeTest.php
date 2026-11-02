@@ -1,17 +1,22 @@
 <?php
 declare(strict_types=1);
 namespace App\Tests;
-use App\Coding\Entity\{ExerciseVersion, CodeSubmission};
+use App\Coding\Domain\Entity\{ExerciseVersion, CodeSubmission};
 use App\Coding\Service\{ExerciseService, SubmissionService, SubmissionTransitions, CodingView};
 use App\Coding\Contract\RunnerResult;
-use App\Entity\{Course, Sprint, Card, Task, Enrollment, TaskProgress, QuestPrerequisite};
+use App\Learning\Domain\Entity\Course;
+use App\Learning\Domain\Entity\Sprint;
+use App\Learning\Domain\Entity\Card;
+use App\Learning\Domain\Entity\Task;
+use App\Mentor\Domain\Entity\Enrollment;
+use App\Learning\Domain\Entity\TaskProgress;
+use App\Mentor\Domain\Entity\QuestPrerequisite;
 use App\Service\{QuestAvailabilityService, ProgressService};
 use App\Tests\Support\MockCodeRunnerClient;
 use Doctrine\ORM\Tools\SchemaTool;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
-use Symfony\Component\HttpKernel\Exception\{NotFoundHttpException, ConflictHttpException};
+use App\Shared\Application\Exception\{Conflict,ResourceNotVisible};
 
-final class CodingPracticeTest extends WebTestCase
+final class CodingPracticeTest extends TestCase
 {
     private Task $task;
     private ExerciseVersion $version;
@@ -36,11 +41,11 @@ final class CodingPracticeTest extends WebTestCase
     }
     private function service(MockCodeRunnerClient $runner): SubmissionService
     {
-        return new SubmissionService($this->em(), self::getContainer()->get(QuestAvailabilityService::class), $runner, new SubmissionTransitions(),self::getContainer()->get(\App\Access\ResourcePolicy::class));
+        return new SubmissionService(self::getContainer()->get(\App\Coding\Application\Port\CodingRepository::class), self::getContainer()->get(QuestAvailabilityService::class), $runner, new SubmissionTransitions(),self::getContainer()->get(\App\Access\ResourcePolicy::class));
     }
     private function save(SubmissionService $service, string $mode = 'submit', string $language = 'php'): CodeSubmission
     {
-        return $service->save($this->task, 'demo-student', $this->version->id, $language, 'user source', $mode);
+        return $service->save($this->task, '001', $this->version->id, $language, 'user source', $mode);
     }
     private function runnerResult(CodeSubmission $submission, string $status = 'passed', ?bool $all = true): RunnerResult
     {
@@ -68,7 +73,7 @@ final class CodingPracticeTest extends WebTestCase
     {
         $this->prepare(); $service = $this->service(new MockCodeRunnerClient());
         foreach ([['python','source','draft'],['php','   ','draft'],['php',str_repeat('x',65537),'draft'],['php','source','passed'],['php',str_repeat('я',33000),'draft']] as [$language,$source,$mode]) {
-            try { $service->save($this->task,'demo-student',$this->version->id,$language,$source,$mode); self::fail('Invalid input accepted'); }
+            try { $service->save($this->task,'001',$this->version->id,$language,$source,$mode); self::fail('Invalid input accepted'); }
             catch (\InvalidArgumentException) { self::assertSame(0, $this->em()->getRepository(CodeSubmission::class)->count([])); }
         }
     }
@@ -83,7 +88,7 @@ final class CodingPracticeTest extends WebTestCase
         $this->prepare(); $runner = new MockCodeRunnerClient(); $service = $this->service($runner); $saved = $this->save($service, 'check');
         self::assertSame('queued', $saved->status); self::assertCount(1, $runner->requests[0]->tests);
         self::assertStringNotContainsString('SECRET', json_encode($runner->requests[0]->tests));
-        $runner->result = $this->runnerResult($saved); $service->refresh($saved, 'demo-student');
+        $runner->result = $this->runnerResult($saved); $service->refresh($saved, '001');
         self::assertSame('passed', $saved->status); self::assertSame(0, $this->em()->getRepository(TaskProgress::class)->count([]));
     }
     public function testTrustedFinalPassIsIdempotentAndUnlocksNextQuest(): void
@@ -91,11 +96,11 @@ final class CodingPracticeTest extends WebTestCase
         $this->prepare(); $next = new Task(); $next->card = $this->task->card; $next->title = 'Следующий'; $this->em()->persist($next);
         $dependency = new QuestPrerequisite(); $dependency->task = $next; $dependency->requiredTask = $this->task; $this->em()->persist($dependency); $this->em()->flush();
         $runner = new MockCodeRunnerClient(); $service = $this->service($runner); $saved = $this->save($service);
-        self::assertCount(2, $runner->requests[0]->tests); self::assertSame('locked', self::getContainer()->get(QuestAvailabilityService::class)->state($next,'demo-student')->value);
+        self::assertCount(2, $runner->requests[0]->tests); self::assertSame('locked', self::getContainer()->get(QuestAvailabilityService::class)->state($next,'001')->value);
         $result = $this->runnerResult($saved); $service->acceptTrustedResult($saved,$result); $service->acceptTrustedResult($saved,$result);
         self::assertSame('passed', $saved->status); self::assertSame(100.0,$saved->score);
         self::assertSame(1, $this->em()->getRepository(TaskProgress::class)->count([]));
-        self::assertSame('available', self::getContainer()->get(QuestAvailabilityService::class)->state($next,'demo-student')->value);
+        self::assertSame('available', self::getContainer()->get(QuestAvailabilityService::class)->state($next,'001')->value);
         self::assertStringNotContainsString('SECRET', json_encode(self::getContainer()->get(CodingView::class)->submission($saved)));
     }
     public function testRunningFailedErrorTimeoutDoNotComplete(): void
@@ -115,7 +120,7 @@ final class CodingPracticeTest extends WebTestCase
     public function testConflictingRepeatedResultRejected(): void
     {
         $this->prepare(); $service = $this->service(new MockCodeRunnerClient()); $saved = $this->save($service);
-        $service->acceptTrustedResult($saved,$this->runnerResult($saved)); $this->expectException(ConflictHttpException::class);
+        $service->acceptTrustedResult($saved,$this->runnerResult($saved)); $this->expectException(Conflict::class);
         $service->acceptTrustedResult($saved,$this->runnerResult($saved,'failed',false));
     }
     public function testWrongRunnerIdentityCannotComplete(): void
@@ -131,17 +136,17 @@ final class CodingPracticeTest extends WebTestCase
     }
     public function testManualCompletionIsBlocked(): void
     {
-        $this->prepare(); $this->expectException(ConflictHttpException::class); self::getContainer()->get(ProgressService::class)->setCompleted($this->task,true);
+        $this->prepare(); $this->expectException(Conflict::class); self::getContainer()->get(ProgressService::class)->setCompleted($this->task,true);
     }
     public function testNoAssignmentCannotSeeExercise(): void
     {
-        $this->prepare(); $this->expectException(NotFoundHttpException::class);
+        $this->prepare(); $this->expectException(ResourceNotVisible::class);
         self::getContainer()->get(SubmissionService::class)->exercise($this->task,'other-user');
     }
     public function testOwnerGuard(): void
     {
         $this->prepare(); $saved = $this->save($this->service(new MockCodeRunnerClient()),'draft');
-        $this->expectException(NotFoundHttpException::class); self::getContainer()->get(SubmissionService::class)->owned($saved->publicId,'other-user');
+        $this->expectException(ResourceNotVisible::class); self::getContainer()->get(SubmissionService::class)->owned($saved->publicId,'other-user');
     }
     public function testHtmlNoSecretsCsrfAndClientResultForgery(): void
     {
@@ -154,7 +159,7 @@ final class CodingPracticeTest extends WebTestCase
         $values['userId']='intruder'; $values['status']='passed'; $values['score']=100; $values['result']=['passed'=>true]; $values['action']='submit';
         $client->request('POST','/learn/coding/'.$id,$values); self::assertResponseRedirects(); $client->followRedirect(); self::assertResponseIsSuccessful();
         $saved = $this->em()->getRepository(CodeSubmission::class)->findOneBy([]);
-        self::assertSame('demo-student',$saved->userId); self::assertSame('draft',$saved->status); self::assertNull($saved->score);
+        self::assertSame('001',$saved->userId); self::assertSame('draft',$saved->status); self::assertNull($saved->score);
         self::assertStringNotContainsString('<script>alert(1)</script>',$client->getResponse()->getContent());
         self::assertSame(0,$this->em()->getRepository(TaskProgress::class)->count([]));
         unset($values['code_solution']['_token']); $client->request('POST','/learn/coding/'.$id,$values); self::assertResponseStatusCodeSame(422);
@@ -173,14 +178,14 @@ final class CodingPracticeTest extends WebTestCase
     public function testDraftPreservesExistingOtherProgress(): void
     {
         $this->prepare(); $other=new Task(); $other->card=$this->task->card; $other->title='Прежнее'; $this->em()->persist($other); $this->em()->flush();
-        $progress=new TaskProgress('demo-student',$other); $this->em()->persist($progress); $this->em()->flush(); $stamp=$progress->completedAt;
+        $progress=new TaskProgress('001',$other); $this->em()->persist($progress); $this->em()->flush(); $stamp=$progress->completedAt;
         $saved=$this->save($this->service(new MockCodeRunnerClient()),'draft'); self::assertSame('draft',$saved->status);
         self::assertSame(1,$this->em()->getRepository(TaskProgress::class)->count([])); self::assertSame($stamp,$progress->completedAt);
     }
     public function testStaleExerciseVersionRejected(): void
     {
-        $this->prepare(); $this->expectException(ConflictHttpException::class);
-        $this->service(new MockCodeRunnerClient())->save($this->task,'demo-student',$this->version->id+100,'php','code','draft');
+        $this->prepare(); $this->expectException(Conflict::class);
+        $this->service(new MockCodeRunnerClient())->save($this->task,'001',$this->version->id+100,'php','code','draft');
     }
     public function testWrongTestVersionRejected(): void
     {
@@ -222,7 +227,7 @@ final class CodingPracticeTest extends WebTestCase
     public function testPendingPollAndPartialPublicPassCannotComplete(): void
     {
         $this->prepare(); $runner=new MockCodeRunnerClient(); $service=$this->service($runner); $saved=$this->save($service);
-        $service->refresh($saved,'demo-student'); self::assertSame('queued',$saved->status); self::assertNull($saved->score);
+        $service->refresh($saved,'001'); self::assertSame('queued',$saved->status); self::assertNull($saved->score);
         $this->expectException(\DomainException::class);
         $service->acceptTrustedResult($saved,new RunnerResult($saved->runnerJobId,$saved->publicId,$this->version->testsVersion,'passed',[],true));
     }
@@ -234,7 +239,7 @@ final class CodingPracticeTest extends WebTestCase
     public function testRevokedSubmitPermissionPreventsNewCompletionFromLateResult(): void
     {
         $this->prepare();$service=$this->service(new MockCodeRunnerClient());$saved=$this->save($service);
-        $grant=$this->em()->getRepository(\App\Entity\PermissionGrant::class)->findOneBy(['userId'=>'demo-student','permission'=>'task.submit']);
+        $grant=$this->em()->getRepository(\App\Access\Domain\Entity\PermissionGrant::class)->findOneBy(['userId'=>'001','permission'=>'task.submit']);
         $this->em()->remove($grant);$this->em()->flush();$service->acceptTrustedResult($saved,$this->runnerResult($saved));
         self::assertSame('passed',$saved->status);self::assertSame(0,$this->em()->getRepository(TaskProgress::class)->count([]));
     }

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<doctrine-mapping xmlns="https://www.doctrine-project.org/schemas/orm/doctrine-mapping" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://www.doctrine-project.org/schemas/orm/doctrine-mapping https://www.doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
+  <entity name="App\Assessment\Domain\Entity\AssessmentAttempt" table="entry_attempt">
+    <id name="id" type="integer"><generator strategy="AUTO"/></id>
+    <field name="publicId" type="string" length="32" unique="true"/>
+    <field name="activeKey" type="string" length="64" nullable="true" unique="true"/>
+    <many-to-one field="assessment" target-entity="App\Assessment\Domain\Entity\Assessment"><join-column name="assessment_id" referenced-column-name="id" nullable="false"/></many-to-one>
+    <field name="userId" type="string" length="100"/>
+    <field name="status" type="string" length="20"/>
+    <field name="snapshot" type="json"/>
+    <field name="startedAt" type="datetime_immutable"/>
+    <field name="completedAt" type="datetime_immutable" nullable="true"/>
+  </entity>
+</doctrine-mapping>

@@ -2,7 +2,10 @@ framework:
     secret: '%env(APP_SECRET)%'
     csrf_protection: true
     form: true
-    validation: { enable_attributes: true }
+    validation:
+        enable_attributes: true
+        mapping:
+            paths: ['%kernel.project_dir%/config/validator']
     translator: { fallbacks: ['ru'] }
     default_locale: ru
     session:

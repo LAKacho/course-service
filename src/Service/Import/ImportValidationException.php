@@ -1,10 +1,3 @@
 <?php
-namespace App\Service\Import;
-
-class ImportValidationException extends \RuntimeException
-{
-    public function __construct(public readonly array $errors)
-    {
-        parent::__construct(implode("\n", $errors));
-    }
-}
+declare(strict_types=1);
+class_alias('App\\Learning\\Application\\Import\\ImportValidationException', 'App\\Service\\Import\\ImportValidationException');

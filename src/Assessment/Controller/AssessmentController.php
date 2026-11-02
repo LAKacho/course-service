@@ -1,13 +1,13 @@
 <?php
 namespace App\Assessment\Controller;
-use App\Assessment\Entity\Assessment;
-use App\Assessment\Form\AnswerType;
-use App\Assessment\Service\{AssessmentService, AssessmentView};
-use App\Service\CurrentUser;
+use App\Assessment\Domain\Entity\Assessment;
+use App\Assessment\Infrastructure\Form\AnswerType;
+use App\Assessment\Application\Service\{AssessmentService, AssessmentView};
+use App\Auth\Infrastructure\Session\CurrentUser;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\{Request, Response};
-use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
+use App\Shared\Application\Exception\Conflict;
 use Symfony\Component\Routing\Attribute\Route;
 
 class AssessmentController extends AbstractController
@@ -43,7 +43,7 @@ class AssessmentController extends AbstractController
             try {
                 $this->service->answer($attempt, $this->user->id(), $key, is_array($selected) ? $selected : [$selected]);
                 return $this->redirectToRoute('assessment_attempt', ['id' => $id], 303);
-            } catch (ConflictHttpException $exception) {
+            } catch (Conflict $exception) {
                 return $this->privateResponse($this->render('assessment/message.html.twig', ['message' => $exception->getMessage()], new Response(status: 409)));
             }
         }
@@ -56,7 +56,7 @@ class AssessmentController extends AbstractController
         $this->csrf($request, 'assessment_finish_'.$id);
         $attempt = $this->service->owned($id, $this->user->id());
         try { $this->service->finish($attempt, $this->user->id()); }
-        catch (ConflictHttpException $exception) { return $this->privateResponse($this->render('assessment/message.html.twig', ['message' => $exception->getMessage()], new Response(status: 409))); }
+        catch (Conflict $exception) { return $this->privateResponse($this->render('assessment/message.html.twig', ['message' => $exception->getMessage()], new Response(status: 409))); }
         return $this->redirectToRoute('assessment_result', ['id' => $id], 303);
     }
     #[Route('/assessments/attempts/{id}/result', name: 'assessment_result', requirements: ['id' => '[a-f0-9]{32}'], methods: ['GET'])]
@@ -64,7 +64,7 @@ class AssessmentController extends AbstractController
     {
         $attempt = $this->service->owned($id, $this->user->id());
         try { $result = $this->view->result($attempt); }
-        catch (ConflictHttpException $exception) { return $this->privateResponse($this->render('assessment/message.html.twig', ['message' => $exception->getMessage()], new Response(status: 409))); }
+        catch (Conflict $exception) { return $this->privateResponse($this->render('assessment/message.html.twig', ['message' => $exception->getMessage()], new Response(status: 409))); }
         return $this->privateResponse($this->render('assessment/result.html.twig', ['result' => $result]));
     }
     private function answerForm(string $id, array $question): \Symfony\Component\Form\FormInterface

@@ -2,17 +2,24 @@
 declare(strict_types=1);
 namespace App\Tests;
 use App\Access\{AccessChecker,GrantManager,PermissionCatalog};
-use App\Entity\{Course,Sprint,Card,Task,Enrollment,QuestPrerequisite,LearningPath,PathCourse,PermissionGrant};
+use App\Learning\Domain\Entity\Course;
+use App\Learning\Domain\Entity\Sprint;
+use App\Learning\Domain\Entity\Card;
+use App\Learning\Domain\Entity\Task;
+use App\Mentor\Domain\Entity\Enrollment;
+use App\Mentor\Domain\Entity\QuestPrerequisite;
+use App\Learning\Domain\Entity\LearningPath;
+use App\Learning\Domain\Entity\PathCourse;
+use App\Access\Domain\Entity\PermissionGrant;
 use Doctrine\ORM\Tools\SchemaTool;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
-use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
+use App\Access\Application\Exception\PermissionDenied;
 
-final class PermissionAccessTest extends WebTestCase
+final class PermissionAccessTest extends TestCase
 {
     private Course $go;private Course $php;private Task $start;private Task $hidden;
     private function em(){return self::getContainer()->get('doctrine')->getManager();}
     private function access(): AccessChecker{return self::getContainer()->get(AccessChecker::class);}
-    private function grant(string $permission,?object $resource=null,string $user='demo-student'): void
+    private function grant(string $permission,?object $resource=null,string $user='001'): void
     {
         self::getContainer()->get(GrantManager::class)->install($user,$permission,$resource instanceof LearningPath?'learning_path':($resource?'course':'global'),$resource,'phpunit');
     }
@@ -42,7 +49,7 @@ final class PermissionAccessTest extends WebTestCase
     }
     public function testGoOnlyDoesNotRevealPhpViaHtmlOrJson(): void
     {
-        $client=$this->prepare();$this->learner();self::assertTrue($this->access()->can('demo-student','course.view',$this->go));self::assertFalse($this->access()->can('demo-student','course.view',$this->php));
+        $client=$this->prepare();$this->learner();self::assertTrue($this->access()->can('001','course.view',$this->go));self::assertFalse($this->access()->can('001','course.view',$this->php));
         foreach(['/courses','/api/courses'] as $url){$client->request('GET',$url);self::assertResponseIsSuccessful();self::assertStringContainsString('GO COURSE',$client->getResponse()->getContent());self::assertStringNotContainsString('PHP COURSE',$client->getResponse()->getContent());}
         foreach(['/courses/'.$this->php->id,'/api/courses/'.$this->php->id,'/api/courses/'.$this->php->id.'/sprints','/sprints/2','/cards/2','/api/cards/2/tasks'] as $url){$client->request('GET',$url);self::assertResponseStatusCodeSame(404);}
     }
@@ -73,19 +80,19 @@ final class PermissionAccessTest extends WebTestCase
         $this->prepare();$a=new LearningPath();$a->title='A';$a->slug='a';$b=new LearningPath();$b->title='B';$b->slug='b';
         foreach([$a,$b] as $path)$this->em()->persist($path);$this->em()->flush();
         foreach([[$a,$this->go],[$b,$this->go],[$b,$this->php]] as [$path,$course]){$link=new PathCourse($path);$link->course=$course;$this->em()->persist($link);}$this->em()->flush();
-        $this->grant('course.edit',$a);self::assertTrue($this->access()->can('demo-student','course.edit',$this->go));self::assertFalse($this->access()->can('demo-student','course.edit',$this->php));self::assertFalse($this->access()->can('demo-student','course.edit',$b));
-        $this->go->title='Теперь произвольное название';$this->em()->flush();self::assertTrue($this->access()->can('demo-student','course.edit',$this->go));
+        $this->grant('course.edit',$a);self::assertTrue($this->access()->can('001','course.edit',$this->go));self::assertFalse($this->access()->can('001','course.edit',$this->php));self::assertFalse($this->access()->can('001','course.edit',$b));
+        $this->go->title='Теперь произвольное название';$this->em()->flush();self::assertTrue($this->access()->can('001','course.edit',$this->go));
     }
     public function testManagementIsDeniedWithoutPermission(): void
     {
         $client=$this->prepare();$client->request('GET','/manage/access');self::assertResponseStatusCodeSame(403);
-        $client->request('POST','/manage/access',['targetUser'=>'demo-student','permission'=>'access.manage']);self::assertResponseStatusCodeSame(403);
+        $client->request('POST','/manage/access',['targetUser'=>'001','permission'=>'access.manage']);self::assertResponseStatusCodeSame(403);
     }
     public function testSelfGrantIsForbiddenEvenForAccessManager(): void
     {
         $client=$this->prepare();$this->grant('access.manage');$this->grant('course.view');
         $crawler=$client->request('GET','/manage/access');self::assertResponseIsSuccessful();
-        $client->submit($crawler->selectButton('Выдать разрешение')->form(['form[targetUser]'=>'demo-student','form[permission]'=>'course.view','form[resource]'=>'global']));self::assertResponseStatusCodeSame(403);
+        $client->submit($crawler->selectButton('Выдать разрешение')->form(['form[targetUser]'=>'001','form[permission]'=>'course.view','form[resource]'=>'global']));self::assertResponseStatusCodeSame(403);
     }
     public function testManagerCanGrantAndRevokeAnotherUserButNotDelegateAccessManage(): void
     {
@@ -102,14 +109,14 @@ final class PermissionAccessTest extends WebTestCase
     }
     public function testDiagnosticPermissionsRemainSeparateAndCannotBeForged(): void
     {
-        $client=$this->prepare();$client->request('GET','/api/me/assessments?permission=assessment.take&userId=demo-student');self::assertResponseStatusCodeSame(403);
+        $client=$this->prepare();$client->request('GET','/api/me/assessments?permission=assessment.take&userId=001');self::assertResponseStatusCodeSame(403);
         $this->grant('assessment.take');$client->request('GET','/api/me/assessments');self::assertResponseIsSuccessful();
         $client->request('GET','/api/me/assessment-attempts/'.str_repeat('a',32).'/result');self::assertResponseStatusCodeSame(403);
     }
     public function testCannotDelegateBeyondOwnScope(): void
     {
-        $this->prepare();$this->grant('access.manage');$this->grant('course.edit',$this->go);$this->expectException(AccessDeniedHttpException::class);
-        self::getContainer()->get(GrantManager::class)->grant('demo-student','other-person','course.edit','course',$this->php);
+        $this->prepare();$this->grant('access.manage');$this->grant('course.edit',$this->go);$this->expectException(PermissionDenied::class);
+        self::getContainer()->get(GrantManager::class)->grant('001','other-person','course.edit','course',$this->php);
     }
     public function testManagementCsrfPreventsWrites(): void
     {

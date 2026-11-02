@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<doctrine-mapping xmlns="https://www.doctrine-project.org/schemas/orm/doctrine-mapping" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://www.doctrine-project.org/schemas/orm/doctrine-mapping https://www.doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
+  <entity name="App\Assessment\Domain\Entity\Assessment" table="entry_assessment">
+    <id name="id" type="integer"><generator strategy="AUTO"/></id>
+    <field name="code" type="string" length="40" unique="true"/>
+    <field name="title" type="string" length="180"/>
+    <field name="description" type="text"/>
+    <field name="version" type="integer"/>
+    <field name="coreSkills" type="json"/>
+    <many-to-many field="questions" target-entity="App\Assessment\Domain\Entity\Question">
+      <order-by><order-by-field name="position" direction="ASC"/><order-by-field name="id" direction="ASC"/></order-by>
+      <join-table name="entry_assessment_question"><join-columns><join-column name="assessment_id" referenced-column-name="id"/></join-columns><inverse-join-columns><join-column name="question_id" referenced-column-name="id"/></inverse-join-columns></join-table>
+    </many-to-many>
+  </entity>
+</doctrine-mapping>

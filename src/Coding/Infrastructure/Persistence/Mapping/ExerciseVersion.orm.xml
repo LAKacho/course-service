@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<doctrine-mapping xmlns="https://www.doctrine-project.org/schemas/orm/doctrine-mapping"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="https://www.doctrine-project.org/schemas/orm/doctrine-mapping https://www.doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
+  <entity name="App\Coding\Domain\Entity\ExerciseVersion" table="coding_exercise_version">
+    <id name="id" type="integer"><generator strategy="AUTO"/></id>
+    <field name="version" type="integer"/>
+    <field name="testsVersion" type="string" length="64"/>
+    <field name="title" type="string" length="180"/>
+    <field name="statement" type="text"/>
+    <field name="starters" type="json"/>
+    <field name="limits" type="json"/>
+    <field name="publicTests" type="json"/>
+    <field name="hiddenTests" type="json"/>
+    <field name="criteria" type="string" length="40"/>
+    <field name="createdAt" type="datetime_immutable"/>
+    <many-to-one field="task" target-entity="App\Learning\Domain\Entity\Task">
+      <join-column name="task_id" referenced-column-name="id" nullable="false"/>
+    </many-to-one>
+    <unique-constraints>
+      <unique-constraint name="unique_coding_task_version" columns="task_id,version"/>
+    </unique-constraints>
+  </entity>
+</doctrine-mapping>

@@ -15,7 +15,7 @@
     "doctrine/doctrine-migrations-bundle": "^3.4"
   },
   "require-dev": {"doctrine/doctrine-fixtures-bundle": "^4.0", "phpunit/phpunit": "^11.5", "symfony/browser-kit": "7.4.*", "symfony/css-selector": "7.4.*"},
-  "autoload": {"psr-4": {"App\\": "src/", "DoctrineMigrations\\": "migrations/"}},
+  "autoload": {"psr-4": {"App\\DataFixtures\\": "src/Shared/Infrastructure/DataFixtures/", "App\\Entity\\": "src/Shared/Infrastructure/Compatibility/Entity/", "App\\Integration\\": "src/Shared/Integration/", "App\\": "src/", "DoctrineMigrations\\": "migrations/"}, "files": ["src/Assessment/Service/AssessmentService.php", "src/Access/AccessChecker.php", "src/Service/Import/ImportValidationException.php"]},
   "autoload-dev": {"psr-4": {"App\\Tests\\": "tests/"}},
   "config": {"allow-plugins": {"symfony/runtime": true}, "sort-packages": true},
   "scripts": {"test": "phpunit"}

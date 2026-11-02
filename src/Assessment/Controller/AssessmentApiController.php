@@ -1,10 +1,10 @@
 <?php
 namespace App\Assessment\Controller;
-use App\Assessment\Service\{AssessmentService, AssessmentView};
-use App\Service\CurrentUser;
+use App\Assessment\Application\Service\{AssessmentService, AssessmentView};
+use App\Auth\Infrastructure\Session\CurrentUser;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
+use App\Shared\Application\Exception\Conflict;
 use Symfony\Component\Routing\Attribute\Route;
 
 #[Route('/api/me', defaults: ['_format' => 'json'])]
@@ -19,7 +19,7 @@ class AssessmentApiController extends AbstractController
     public function result(string $id): JsonResponse
     {
         try { return $this->response($this->view->result($this->service->owned($id, $this->user->id()))); }
-        catch (ConflictHttpException) { return $this->response(['error' => 'Результат появится после завершения теста.'], 409); }
+        catch (Conflict) { return $this->response(['error' => 'Результат появится после завершения теста.'], 409); }
     }
     private function response(array $data, int $status = 200): JsonResponse
     {

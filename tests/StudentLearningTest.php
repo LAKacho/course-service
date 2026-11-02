@@ -1,13 +1,32 @@
 <?php
 namespace App\Tests;
 
-use App\Entity\{Course, Sprint, Card, Task, TaskProgress, LearningPath, PathCourse, Enrollment, QuestPrerequisite, QuestActivity, QuestState};
+use App\Learning\Domain\Entity\Course;
+
+use App\Learning\Domain\Entity\Sprint;
+
+use App\Learning\Domain\Entity\Card;
+
+use App\Learning\Domain\Entity\Task;
+
+use App\Learning\Domain\Entity\TaskProgress;
+
+use App\Learning\Domain\Entity\LearningPath;
+
+use App\Learning\Domain\Entity\PathCourse;
+
+use App\Mentor\Domain\Entity\Enrollment;
+
+use App\Mentor\Domain\Entity\QuestPrerequisite;
+
+use App\Student\Domain\Entity\QuestActivity;
+
+use App\Student\Domain\QuestState;
 use App\Service\{EnrollmentService, QuestPrerequisiteService, QuestAvailabilityService, StudentQuestService};
 use Doctrine\ORM\Tools\SchemaTool;
-use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use App\Shared\Application\Exception\ResourceNotVisible;
 
-class StudentLearningTest extends WebTestCase
+class StudentLearningTest extends TestCase
 {
     private function prepare(): \Symfony\Bundle\FrameworkBundle\KernelBrowser
     {
@@ -43,7 +62,7 @@ class StudentLearningTest extends WebTestCase
         self::getContainer()->get(QuestPrerequisiteService::class)->save($condition);
     }
 
-    private function assign(string $userId = 'demo-student', bool $path = false): void
+    private function assign(string $userId = '001', bool $path = false): void
     {
         $enrollment = new Enrollment(); $enrollment->userId = $userId;
         if ($path) { $enrollment->learningPath = $this->em()->find(LearningPath::class, 1); }
@@ -63,8 +82,8 @@ class StudentLearningTest extends WebTestCase
     public function testNoEnrollmentHidesProgramAndHistoricalProgress(): void
     {
         $client = $this->prepare();
-        $this->em()->persist(new TaskProgress('demo-student', $this->em()->find(Task::class, 1))); $this->em()->flush();
-        self::assertSame(QuestState::Locked, self::getContainer()->get(QuestAvailabilityService::class)->state($this->em()->find(Task::class, 1), 'demo-student'));
+        $this->em()->persist(new TaskProgress('001', $this->em()->find(Task::class, 1))); $this->em()->flush();
+        self::assertSame(QuestState::Locked, self::getContainer()->get(QuestAvailabilityService::class)->state($this->em()->find(Task::class, 1), '001'));
         self::assertSame([], $this->json($client, '/api/me/quests'));
         self::assertSame(['learningPaths' => [], 'courses' => []], $this->json($client, '/api/me/learning-paths'));
         self::assertSame(['visible' => 0, 'available' => 0, 'inProgress' => 0, 'completed' => 0, 'percentVisible' => 0], $this->json($client, '/api/me/progress'));
@@ -77,14 +96,14 @@ class StudentLearningTest extends WebTestCase
     {
         $client = $this->prepare(); $this->assign();
         $availability = self::getContainer()->get(QuestAvailabilityService::class);
-        self::assertSame(QuestState::Available, $availability->state($this->em()->find(Task::class, 1), 'demo-student'));
-        self::assertSame(QuestState::Locked, $availability->state($this->em()->find(Task::class, 2), 'demo-student'));
+        self::assertSame(QuestState::Available, $availability->state($this->em()->find(Task::class, 1), '001'));
+        self::assertSame(QuestState::Locked, $availability->state($this->em()->find(Task::class, 2), '001'));
         $quests = $this->json($client, '/api/me/quests');
         self::assertSame([1], array_column($quests, 'id')); self::assertSame('available', $quests[0]['state']);
         try {
             self::getContainer()->get(StudentQuestService::class)->complete($this->em()->find(Task::class, 2));
             self::fail('Locked tasks must be rejected even without an HTTP controller');
-        } catch (NotFoundHttpException) { self::assertTrue(true); }
+        } catch (ResourceNotVisible) { self::assertTrue(true); }
         self::assertSame(0, (int) $this->em()->getConnection()->fetchOne('SELECT COUNT(*) FROM task_progress'));
     }
 
@@ -165,13 +184,13 @@ class StudentLearningTest extends WebTestCase
     public function testLegacyCompletionRemainsTheOnlySourceOfCompletion(): void
     {
         $client = $this->prepare(); $this->assign();
-        $progress = new TaskProgress('demo-student', $this->em()->find(Task::class, 3));
+        $progress = new TaskProgress('001', $this->em()->find(Task::class, 3));
         $this->em()->persist($progress); $this->em()->flush(); $id = $progress->id;
         $quests = $this->json($client, '/api/me/quests');
         self::assertSame([1, 3], array_column($quests, 'id'));
         self::assertSame(['available', 'completed'], array_column($quests, 'state'));
         self::assertSame(0, $this->em()->getRepository(QuestActivity::class)->count([]));
-        self::assertSame($id, $this->em()->getRepository(TaskProgress::class)->findOneBy(['userId' => 'demo-student'])->id);
+        self::assertSame($id, $this->em()->getRepository(TaskProgress::class)->findOneBy(['userId' => '001'])->id);
     }
 
     public function testCyclesAndInvalidEditingAreRejectedWithoutSaving(): void

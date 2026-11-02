@@ -1,10 +1,5 @@
 <?php
+declare(strict_types=1);
 namespace App\Service;
-use App\Entity\Card;
-class CardWorkflow
-{
-    public function changeStatus(Card $card, string $status): void {
-        if (!in_array($status, Card::STATUSES, true)) { throw new \InvalidArgumentException('Неизвестный статус карточки.'); }
-        $card->status = $status;
-    }
-}
+
+class_alias(\App\Learning\Application\Service\CardWorkflow::class, __NAMESPACE__.'\\CardWorkflow');
