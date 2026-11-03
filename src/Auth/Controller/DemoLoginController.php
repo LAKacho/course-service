@@ -17,7 +17,9 @@ final class DemoLoginController extends AbstractController
     {
         if($user->id()!=='')return $this->redirectToRoute('student_home',status:303);
         $form=$this->createFormBuilder(null,['csrf_token_id'=>'demo_login'])
+
             ->add('login',TextType::class,['label'=>'Логин','constraints'=>[new Assert\NotBlank(),new Assert\Length(max:100)],'attr'=>['autocomplete'=>'username','autofocus'=>true]])->getForm()->handleRequest($request);
+
         $error=null;$status=200;
         if($form->isSubmitted()){
             if($form->isValid()){
@@ -29,7 +31,9 @@ final class DemoLoginController extends AbstractController
                     $home=$access->can($account->id,'statistics.view')?'dashboard':($access->any($account->id,'course.edit')?'courses':'student_home');
                     return $this->redirect(is_string($target)&&str_starts_with($target,'/')&&!str_starts_with($target,'//')&&!str_contains($target,'\\')?$target:$this->generateUrl($home),303);
                 }
+
                 $error='Учётная запись не найдена или отключена.';
+
             }
             $status=422;
         }
@@ -43,3 +47,6 @@ final class DemoLoginController extends AbstractController
         $request->getSession()->invalidate();return $this->redirectToRoute('demo_login',status:303);
     }
 }
+
+
+\n

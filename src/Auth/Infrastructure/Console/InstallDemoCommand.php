@@ -27,7 +27,9 @@ final class InstallDemoCommand extends Command
         $this->bank->install();
         $go=$this->em->getRepository(Course::class)->findOneBy(['importKey'=>'course-service-go:go-foundations']);
         $card=$this->em->getRepository(Card::class)->findOneBy(['importKey'=>'course-service-go:go-cli-card']);
+
         foreach(['001'=>'Демо-ученик','002'=>'Редактор Go','003'=>'Просмотр статистики','004'=>'Оператор доступа'] as $id=>$name){
+
             if(!$this->em->find(DemoAccount::class,$id)){$account=new DemoAccount();$account->id=$id;$account->displayName=$name;$this->em->persist($account);}
         }$this->em->flush();
         foreach(['001','004'] as $id){
@@ -39,7 +41,12 @@ final class InstallDemoCommand extends Command
         $this->grants->install('003','statistics.view','global',null,'demo-setup');
         foreach(array_keys(PermissionCatalog::ALL) as $permission){if($permission!=='course.delete')$this->grants->install('004',$permission,'global',null,'demo-setup');}
         $code=$this->getApplication()->find('app:coding:install-demo')->run(new ArrayInput(['cardId'=>$card->id]),$output);
-        $output->writeln('Demo ready. Logins: 001 (ученик), 002 (редактор Go), 003 (статистика), 004 (оператор доступа). No passwords: local use only.');
+
+=======
+        $output->writeln('Demo ready. Logins: 001 (СѓС‡РµРЅРёРє), 002 (СЂРµРґР°РєС‚РѕСЂ Go), 003 (СЃС‚Р°С‚РёСЃС‚РёРєР°), 004 (РѕРїРµСЂР°С‚РѕСЂ РґРѕСЃС‚СѓРїР°). No passwords: local use only.');
         return $code;
     }
 }
+
+
+\n
