@@ -1,3 +1,42 @@
-{% extends 'coding/base.html.twig' %}{% form_theme form 'bootstrap_5_layout.html.twig' %}
+{% extends 'coding/base.html.twig' %}
+{% form_theme form 'bootstrap_5_layout.html.twig' %}
 {% block title %}Вход{% endblock %}
-{% block body %}<section class="panel" style="max-width:520px;margin:48px auto"><span class="eyebrow">COURSE SERVICE</span><h1>Войти в платформу</h1><p>Введите логин подготовленной учётной записи.</p><div class="unavailable"><strong>Локальный демонстрационный вход</strong><p>Пароль не используется. Этот режим не подтверждает личность и не предназначен для публикации приложения в интернете.</p></div>{% if error %}<div class="alert alert-danger" role="alert">{{ error }}</div>{% endif %}{{ form_start(form) }}{{ form_widget(form) }}<button class="btn btn-primary">Войти</button>{{ form_end(form) }}<p class="muted mt-3">Учётные записи и разрешения подготавливает локальный оператор. Вход не создаёт пользователя и не выдаёт права.</p></section>{% endblock %}
+{% block body %}
+<div class="auth-layout">
+    <section class="auth-story" aria-label="MSavin — пространство для развития навыков">
+        <div class="auth-story-glow" aria-hidden="true"></div>
+        <div class="auth-story-top"><span class="auth-orb">✦</span><span>ПРОСТРАНСТВО ДЛЯ РОСТА</span></div>
+        <div class="auth-story-copy">
+            <span class="auth-overline">УЧИТЬСЯ · ПРАКТИКОВАТЬ · РАСТИ</span>
+            <h2>Большие навыки начинаются с одного шага.</h2>
+            <p>Вернитесь к своему пути, продолжите курс и закрепите знания на практике.</p>
+        </div>
+        <div class="auth-story-bottom"><span class="auth-story-line"></span><span>MSAVIN LEARNING SPACE</span><span class="auth-story-index">01 — 03</span></div>
+        <div class="auth-decoration" aria-hidden="true"><span>✧</span><i></i><b></b></div>
+    </section>
+
+    <section class="auth-card" aria-labelledby="auth-title">
+        <div class="auth-card-top">
+            <span class="auth-mode"><i></i> ЛОКАЛЬНАЯ СРЕДА</span>
+            <span class="auth-step">ВХОД <b>01</b></span>
+        </div>
+        <div class="auth-card-heading">
+            <span class="auth-mobile-mark" aria-hidden="true">M</span>
+            <span class="auth-eyebrow">РАДЫ ВАС ВИДЕТЬ</span>
+            <h1 id="auth-title">Войти в MSavin</h1>
+            <p>Введите логин своей учебной учётной записи.</p>
+        </div>
+
+        {% if error %}<div class="alert alert-danger" role="alert">{{ error }}</div>{% endif %}
+
+        <div class="auth-demo-note"><span class="auth-info" aria-hidden="true">i</span><div><strong>Демонстрационный вход</strong><p>Пароль не требуется. Вход доступен только для учётных записей, подготовленных оператором.</p></div></div>
+
+        {{ form_start(form, {attr: {class: 'auth-form'}}) }}
+            {{ form_row(form.login, {label: 'Логин', attr: {placeholder: 'Например, 001', autocomplete: 'username', autocapitalize: 'none', spellcheck: 'false'}}) }}
+            <button class="btn btn-primary auth-submit" type="submit"><span>Продолжить</span><span aria-hidden="true">→</span></button>
+        {{ form_end(form) }}
+
+        <div class="auth-card-footer"><span class="auth-lock" aria-hidden="true">◇</span><p>Локальный режим не подтверждает личность и не предназначен для публичной авторизации.</p></div>
+    </section>
+</div>
+{% endblock %}

@@ -1,1 +1,33 @@
-<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{% block title %}Практика кода{% endblock %} · Course Service</title><link rel="stylesheet" href="/assets/bootstrap.min.css"><link rel="stylesheet" href="/assets/coding.css?v=focus-1"><link rel="stylesheet" href="/assets/ajax.css"><script src="/assets/ajax.js" defer></script><script src="/assets/student.js" defer></script><script src="/assets/coding-editor.js" defer></script></head><body data-ajax-app data-current-user="{{ current_user_id() }}"><header class="coding-header"><a href="{{ path('student_home') }}">◇ Course Service</a><span>МАСТЕРСКАЯ КОДА</span><a href="{{ path('student_home') }}">Мой путь ↗</a>{% include '_session_menu.html.twig' %}</header><main class="coding-main">{% for message in app.flashes('notice') %}<div class="notice" role="status">{{ message }}</div>{% endfor %}{% block body %}{% endblock %}</main><footer>Локальный демонстрационный режим · Код не выполняется на сервере Symfony</footer></body></html>
+{% set authRoute = app.request.attributes.get('_route') == 'demo_login' %}
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="theme-color" content="#030507">
+    <title>{% block title %}Практика кода{% endblock %} · MSavin</title>
+    <link rel="stylesheet" href="/assets/bootstrap.min.css">
+    <link rel="stylesheet" href="/assets/coding.css?v=focus-1">
+    <link rel="stylesheet" href="/assets/ajax.css">
+    <link rel="stylesheet" href="/assets/msavin-theme.css?v=msavin-2">
+    <script src="/assets/ajax.js" defer></script>
+    <script src="/assets/student.js" defer></script>
+    <script src="/assets/coding-editor.js" defer></script>
+</head>
+<body class="{{ authRoute ? 'auth-route' : '' }}" data-ajax-app data-current-user="{{ current_user_id() }}">
+<a class="skip-link" href="#coding-main">К содержимому</a>
+{% if authRoute %}
+    <header class="auth-topbar">
+        <a class="auth-topbar-brand" href="https://msavin-mentor.ru/" target="_blank" rel="noopener noreferrer"><span class="brand-icon">M</span><span>MSavin<small>ПЛАТФОРМА ОБУЧЕНИЯ</small></span></a>
+        <a class="auth-topbar-link" href="https://msavin-mentor.ru/" target="_blank" rel="noopener noreferrer">На основной сайт <span aria-hidden="true">↗</span></a>
+    </header>
+{% else %}
+    <header class="coding-header"><a href="{{ path('student_home') }}"><span class="brand-icon">M</span> MSavin</a><span>МАСТЕРСКАЯ КОДА</span><a href="{{ path('student_home') }}">Мой путь ↗</a>{% include '_session_menu.html.twig' %}</header>
+{% endif %}
+<main class="coding-main {{ authRoute ? 'auth-main' : '' }}" id="coding-main">
+    {% for message in app.flashes('notice') %}<div class="notice" role="status">{{ message }}</div>{% endfor %}
+    {% block body %}{% endblock %}
+</main>
+{% if not authRoute %}<footer>Локальный демонстрационный режим · Код не выполняется на сервере Symfony</footer>{% endif %}
+</body>
+</html>
