@@ -1,6 +1,3 @@
-controllers:
-    resource: ../src/Controller/
-    type: attribute
 student_controllers:
     resource: ../src/Student/Controller/
     type: attribute

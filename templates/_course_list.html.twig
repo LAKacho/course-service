@@ -1,1 +1,13 @@
-<div class="course-grid">{% for course in courses %}<article class="surface course-tile"><div class="d-flex justify-content-between align-items-start"><span class="course-icon">{{ course.title|first|upper }}</span><span class="status status-{{ course.status }}">{{ {'draft':'Черновик','published':'Опубликован','archived':'В архиве'}[course.status] }}</span></div><h3><a href="{{ path('course', {id:course.id}) }}">{{ course.title }}</a></h3><p>{{ course.description|length > 160 ? course.description|slice(0,160) ~ '…' : course.description }}</p><div class="tile-bottom"><span>Добавлен {{ course.createdAt|date('d.m.Y') }}</span><a href="{{ path('course', {id:course.id}) }}" aria-label="Открыть курс {{ course.title }}">Открыть курс →</a></div></article>{% else %}<div class="surface empty-state"><div class="empty-icon">▤</div><h3>Здесь начнётся обучение</h3><p>Создайте первый курс, добавьте спринты и задания.</p>{% if can('course.create') %}<a class="btn btn-primary" href="{{ path('item_new', {kind:'course'}) }}">Создать курс</a>{% endif %}</div>{% endfor %}</div>
+<div class="course-grid" data-catalog-grid>
+{% for course in courses %}
+    <article class="surface course-tile" data-catalog-item data-catalog-status="{{ course.status }}">
+        <div class="d-flex justify-content-between align-items-start"><span class="course-icon">{{ course.title|first|upper }}</span><span class="status status-{{ course.status }}">{{ {'draft':'Черновик','published':'Опубликован','archived':'В архиве'}[course.status] }}</span></div>
+        <h3><a href="{{ path('course', {id:course.id}) }}">{{ course.title }}</a></h3>
+        <p>{{ course.description|length > 160 ? course.description|slice(0,160) ~ '…' : course.description }}</p>
+        <div class="tile-bottom"><span>Добавлен {{ course.createdAt|date('d.m.Y') }}</span><a href="{{ path('course', {id:course.id}) }}" aria-label="Открыть курс {{ course.title }}">Открыть курс →</a></div>
+    </article>
+{% else %}
+    <div class="surface empty-state"><div class="empty-icon">▤</div><h3>Здесь начнётся обучение</h3><p>Создайте первый курс, добавьте спринты и задания.</p>{% if can('course.create') %}<a class="btn btn-primary" href="{{ path('item_new', {kind:'course'}) }}">Создать курс</a>{% endif %}</div>
+{% endfor %}
+    <div class="surface empty-state catalog-no-results" data-catalog-empty hidden><div class="empty-icon">⌕</div><h3>Ничего не найдено</h3><p>Измените запрос или выберите другой статус.</p></div>
+</div>

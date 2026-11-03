@@ -6,9 +6,10 @@
     <div><h1>Направления обучения <span class="heading-count">{{ paths|length }}</span></h1><p>Объединяйте курсы в последовательную программу обучения.</p></div>
     {% if can('course.create') %}<a class="btn btn-primary" href="{{ path('learning_path_new') }}">＋ Создать направление</a>{% endif %}
 </div>
-<div class="course-grid">
+{% include '_catalog_tools.html.twig' %}
+<div class="course-grid" data-catalog-grid>
 {% for item in paths %}
-    <article class="surface course-tile">
+    <article class="surface course-tile" data-catalog-item data-catalog-status="{{ item.status }}">
         <div class="d-flex justify-content-between align-items-start"><span class="course-icon">{{ item.title|first|upper }}</span><span class="status status-{{ item.status }}">{{ {'draft':'Черновик','published':'Опубликовано','archived':'В архиве'}[item.status] }}</span></div>
         <h3><a href="{{ path('learning_path_show', {id:item.id}) }}">{{ item.title }}</a></h3>
         <p>{{ item.description|length > 160 ? item.description|slice(0,160) ~ '…' : item.description }}</p>
@@ -17,5 +18,6 @@
 {% else %}
     <div class="surface empty-state"><h3>Создайте первое направление</h3><p>Существующие курсы можно включать в несколько направлений.</p></div>
 {% endfor %}
+    <div class="surface empty-state catalog-no-results" data-catalog-empty hidden><div class="empty-icon">⌕</div><h3>Ничего не найдено</h3><p>Измените запрос или выберите другой статус.</p></div>
 </div>
 {% endblock %}
