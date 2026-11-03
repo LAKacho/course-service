@@ -9,7 +9,7 @@ class ScoringService
     public function score(array $snapshot, array $answers): array
     {
         if (($snapshot['methodVersion'] ?? self::VERSION) !== self::VERSION) {
-            throw new \DomainException('Р’РµСЂСЃРёСЏ РјРµС‚РѕРґРёРєРё РїРѕРїС‹С‚РєРё РЅРµ РїРѕРґРґРµСЂР¶РёРІР°РµС‚СЃСЏ. РќРµР»СЊР·СЏ РјРѕР»С‡Р° РїРµСЂРµСЃС‡РёС‚Р°С‚СЊ РµС‘ РґСЂСѓРіРѕР№ РјРµС‚РѕРґРёРєРѕР№.');
+            throw new \DomainException('Версия методики попытки не поддерживается. Нельзя молча пересчитать её другой методикой.');
         }
         $correct = 0; $earned = 0; $possible = 0; $skills = [];
         $difficulty = array_fill_keys(['beginner', 'junior', 'middle', 'senior'], ['tested' => 0, 'correct' => 0]);
